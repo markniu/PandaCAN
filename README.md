@@ -17,7 +17,7 @@ MCU| ESP32
 Main board| only two printer main boards [PandaZHU and PandaM4](https://github.com/markniu/PandaZHU) support this PandaCAN extruder board now.
 E motor Driver|TMC2209
 Bed leveling    | 	  BLtouch/ support wild range voltage 5V~36V of inductive sensor NPN.
-heater  |  15Amax for each heater (100A mosfet PSMN1R0-30YLC)
+heater  |  15Amax (100A mosfet PSMN1R0-30YLC)
 Board FAN   | 5V FAN for cooling TMC2209
 hotend FAN | 12/24V PWM FAN
 prints FAN | 12/24V PWM FAN
