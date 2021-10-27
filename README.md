@@ -1,5 +1,5 @@
 # PandaCAN
-PandaCAN is a extruder control board that connect to main board with CAN interface, more resistant to noise,reduce a lot of wires for your 3D printer.
+PandaCAN is an extruder control board that connect to main board with CAN interface, more resistant to noise,reduce a lot of wires for your 3D printer.
 ### Why CAN bus?
 CAN(Controller Area Network) is a robust serial communication bus found mostly in automotive and industrial environments.
 1. resistant to noise, you will have less noise and wiring problem because of the many long signal wires together.
