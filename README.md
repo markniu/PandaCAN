@@ -20,7 +20,7 @@ heater  |  15Amax for each heater (100A mosfet PSMN1R0-30YLC)
 Board FAN   | 5V FAN for cooling TMC2209
 hotend FAN | 12/24V PWM FAN
 prints FAN | 12/24V PWM FAN
-temperature | 1 thermistors NTC100K (30degree~260degree)
+temperature sensor| 1 thermistors NTC100K (30degree~260degree)
 High temperature sensor |  will support PT100 (max31865) in the next version 
 
 [More or TEST video](https://hackaday.io/project/181669-reduce-the-wires-from-19-to-4-with-can-bus)
