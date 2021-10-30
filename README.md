@@ -1,5 +1,5 @@
 # PandaCAN
-PandaCAN is an extruder control board that connect to main board with CAN interface, more resistant to noise,reduce a lot of wires for your 3D printer.
+PandaCAN is an extruder control board that connect to main board with CAN interface, more resistant to signal noise,reduce a lot of wires for your 3D printer.
 
 ![](https://gitee.com/markyue/pandapi_wiki/raw/master/imges/esp/94007.jpg)
 
