@@ -22,8 +22,8 @@ CAN Transceiver|SN65HVD230
 Motor Driver|TMC2209
 Bed leveling    | 	  BLtouch/ support wild range voltage 5V~36V of inductive sensor NPN.
 Board FAN   | 5V FAN for cooling TMC2209
-Hotend FAN | 12/24V PWM FAN
-Prints FAN | 12/24V PWM FAN
+Hotend FAN | Cooling hotend,12/24V PWM FAN
+Prints FAN | Cooling prints,12/24V PWM FAN
 Runout | Filament Runout connector
 Heater  |  15Amax (100A mosfet PSMN1R0-30YLC)
 Temperature sensor| thermistors NTC100K (30degree~260degree)
