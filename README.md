@@ -1,5 +1,8 @@
 # PandaCAN
 PandaCAN is an extruder control board that connect to main board with CAN interface, more resistant to noise,reduce a lot of wires for your 3D printer.
+
+![](https://gitee.com/markyue/pandapi_wiki/raw/master/imges/esp/94007.jpg)
+
 ### Why CAN bus?
 CAN(Controller Area Network) is a robust serial communication bus found mostly in automotive and industrial environments.
 1. Resistant to noise, you will have less signal noise and wiring problem.
@@ -24,4 +27,6 @@ prints FAN | 12/24V PWM FAN
 temperature sensor| 1 thermistors NTC100K (30degree~260degree)
 High temperature sensor |  will support PT100 (max31865) in the other version 
 
-[More or TEST video](https://hackaday.io/project/181669-reduce-the-wires-from-19-to-4-with-can-bus)
+[Test video](https://hackaday.io/project/181669-reduce-the-wires-from-19-to-4-with-can-bus)
+
+[Tutorial wiki](https://github.com/markniu/PandaCAN/wiki)
