@@ -32,3 +32,7 @@ High temperature sensor |  will support PT100 (max31865) in the other version
 [Test video](https://hackaday.io/project/181669-reduce-the-wires-from-19-to-4-with-can-bus)
 
 [Tutorial wiki](https://github.com/markniu/PandaCAN/wiki)
+
+[Where to buy](https://www.pandapi3d.com/product-page/pandacan-extruder)
+
+[Facebook](https://www.facebook.com/groups/380795976169477)
