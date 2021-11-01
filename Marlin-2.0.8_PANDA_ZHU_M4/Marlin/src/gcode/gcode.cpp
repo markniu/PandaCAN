@@ -406,7 +406,7 @@ void  Send_Can_command(void)
       {
         
         if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
-            delay(1);
+       //     delay(1);
            // printf("send0 %x %.5f,%.5f\n", message.identifier,*((float *)message.data),*((float *)(message.data+4)));
         } else {
             printf("Failed2 \n");
@@ -424,7 +424,7 @@ void  Send_Can_command(void)
       {
         
         if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
-           delay(1);// printf("send1 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
+        //   delay(1);// printf("send1 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
         } else {
             printf("Failed3 \n");
         }
@@ -441,7 +441,7 @@ void  Send_Can_command(void)
       {
         
         if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
-           delay(1);// printf("send2 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
+      //     delay(1);// printf("send2 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
         } else {
             printf("Failed4 \n");
         }
@@ -458,7 +458,7 @@ void  Send_Can_command(void)
       {
         
         if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
-           delay(1);// printf("send3 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
+        //   delay(1);// printf("send3 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
         } else {
             printf("Failed5 \n");
         }
@@ -470,7 +470,7 @@ void  Send_Can_command(void)
     {
        //printf("can_transmite\n");
       if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
-           delay(1);// printf("send4 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
+        //   delay(1);// printf("send4 %x %.5f,%.5f\n", message.identifier,*(float *)message.data,*(float *)(message.data+4));
         } else {
             printf("Failed6 \n");
         }

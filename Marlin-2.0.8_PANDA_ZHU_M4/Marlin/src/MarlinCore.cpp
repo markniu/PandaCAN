@@ -1072,10 +1072,11 @@ inline void tmc_standby_setup() {
 
 
 static SemaphoreHandle_t can_sem;
+celsius_t new_temp_target;
 #define RX_TASK_PRIO     9
   
 #if CAN_MASTER_ESP32
- 
+celsius_t target_hotend_slave;
 static void extruder_status_task(void *arg)
 {
     xSemaphoreTake(can_sem, portMAX_DELAY);
@@ -1091,7 +1092,8 @@ static void extruder_status_task(void *arg)
             {
              // printf("\nt:%.5f,%d,%c\n",*((float *)(rx_msg.data)),*((unsigned short *)(rx_msg.data+4)),(char)rx_msg.data[6]);
               thermalManager.temp_hotend[0].celsius=*((float *)(rx_msg.data));
-              thermalManager.temp_hotend[0].target=*((unsigned short *)(rx_msg.data+4));
+             // thermalManager.temp_hotend[0].target=*((unsigned short *)(rx_msg.data+4));
+              target_hotend_slave=*((unsigned short *)(rx_msg.data+4));
               virtual_esp32_pins[FIL_RUNOUT_PIN-200]=rx_msg.data[6]=='H'?1:0;
             }
             else if((rx_msg.identifier&0xff)=='Z')
@@ -1117,7 +1119,6 @@ static void extruder_status_task(void *arg)
 void status_sync_can(void)
 {
   static int16_t old_feedper=feedrate_percentage;
-  static celsius_t target_hotend_old=thermalManager.temp_hotend[0].target;
   can_message_t message;
   if(feedrate_percentage!=old_feedper)
   {   
@@ -1131,6 +1132,7 @@ void status_sync_can(void)
     message.identifier|=(220<<8);
     sprintf((char *)message.data,"S%d\n",feedrate_percentage);
     printf("M220_id:%x,str:%s \n",message.identifier,(char *)message.data );   
+    printf("target:%d,%d\n",thermalManager.temp_hotend[0].target,target_hotend_slave);
     if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
       // printf("send %s \n",message.data);
     } else {
@@ -1139,9 +1141,9 @@ void status_sync_can(void)
   }
 
   ///////
-  if(target_hotend_old!=thermalManager.temp_hotend[0].target)
+  if(target_hotend_slave!=thermalManager.temp_hotend[0].target)
   {
-    target_hotend_old=thermalManager.temp_hotend[0].target;
+    target_hotend_slave=thermalManager.temp_hotend[0].target;
     message.flags = CAN_MSG_FLAG_EXTD;
     message.data_length_code = 8;
     memset(message.data,0,CAN_MAX_DATA_LEN);
@@ -1170,7 +1172,28 @@ void init_data_sync_can(void)
   memset(message.data,0,CAN_MAX_DATA_LEN);
   message.identifier='M';
   message.identifier|=(92<<8);
-  sprintf((char *)message.data,"E%.3f\n",planner.settings.axis_steps_per_mm[E_AXIS]);
+  sprintf((char *)message.data,"E%.1f\n",planner.settings.axis_steps_per_mm[E_AXIS]);
+  printf("M92:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"X%.1f\n",planner.settings.axis_steps_per_mm[X_AXIS]);
+  printf("M92:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"Y%.1f\n",planner.settings.axis_steps_per_mm[Y_AXIS]);
+  printf("M92:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"Z%.1f\n",planner.settings.axis_steps_per_mm[Z_AXIS]);
   printf("M92:%x,str:%s \n",message.identifier,(char *)message.data );   
   if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
     // printf("send %s \n",message.data);
@@ -1189,8 +1212,29 @@ void init_data_sync_can(void)
   } else {
     printf("Failed \n");
   }
+  sprintf((char *)message.data,"X%d\n",planner.settings.max_acceleration_mm_per_s2[X_AXIS]);
+  printf("M201:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"Y%d\n",planner.settings.max_acceleration_mm_per_s2[Y_AXIS]);
+  printf("M201:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"Z%d\n",planner.settings.max_acceleration_mm_per_s2[Z_AXIS]);
+  printf("M201:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
   //////////
- /////////M203 set max acceleration
+ /////////M203 set max feedrate
   memset(message.data,0,CAN_MAX_DATA_LEN);
   message.identifier='M';
   message.identifier|=(203<<8);
@@ -1201,6 +1245,28 @@ void init_data_sync_can(void)
   } else {
     printf("Failed \n");
   }
+  sprintf((char *)message.data,"X%d\n",planner.settings.max_feedrate_mm_s[X_AXIS] );
+  printf("M203:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"Y%d\n",planner.settings.max_feedrate_mm_s[Y_AXIS] );
+  printf("M203:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+  sprintf((char *)message.data,"Z%d\n",planner.settings.max_feedrate_mm_s[Z_AXIS] );
+  printf("M203:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    // printf("send %s \n",message.data);
+  } else {
+    printf("Failed \n");
+  }
+
   //////////
  /////////M204 set DEFAULT_MAX_ACCELERATION  
   memset(message.data,0,CAN_MAX_DATA_LEN);
@@ -1236,8 +1302,8 @@ void ESP32_CAN_INIT()
   g_config.mode=CAN_MODE_NORMAL;
   g_config.tx_io=GPIO_NUM_15;
   g_config.rx_io=GPIO_NUM_13;
-  g_config.tx_queue_len=60;
-  g_config.rx_queue_len=10;
+  g_config.tx_queue_len=50;
+  g_config.rx_queue_len=5;
 
 
 
