@@ -99,7 +99,16 @@ void lcd_move_z() { _lcd_move_xyz(GET_TEXT(MSG_MOVE_Z), Z_AXIS); }
     if (ui.encoderPosition) {
       if (!ui.manual_move.processing) {
         const float diff = float(int32_t(ui.encoderPosition)) * ui.manual_move.menu_scale;
-        TERN(IS_KINEMATIC, ui.manual_move.offset, current_position.e) += diff;
+#if CAN_MASTER_ESP32
+      queue.enqueue_now_P(PSTR("G91"));
+      char buf[32]; // G1 X9999.99 F12345
+      sprintf(buf, PSTR("G0 %0.3f "), diff);
+      queue.enqueue_one_now(buf);
+      queue.enqueue_now_P(PSTR("G90"));
+
+#else
+      TERN(IS_KINEMATIC, ui.manual_move.offset, current_position.e) += diff;
+#endif
         ui.manual_move.soon(E_AXIS OPTARG(MULTI_E_MANUAL, eindex));
         ui.refresh(LCDVIEW_REDRAW_NOW);
       }

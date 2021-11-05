@@ -1118,7 +1118,7 @@ static void extruder_status_task(void *arg)
 
 void status_sync_can(void)
 {
-  static int16_t old_feedper=feedrate_percentage;
+  static int16_t old_feedper=feedrate_percentage,old_fan_speed[FAN_COUNT];
   can_message_t message;
   if(feedrate_percentage!=old_feedper)
   {   
@@ -1139,8 +1139,28 @@ void status_sync_can(void)
       printf("Failed \n");
     }
   }
+  /////current_position.e
 
   ///////
+  if(thermalManager.fan_speed[0]!=old_fan_speed[0])
+  {
+    old_fan_speed[0]=thermalManager.fan_speed[0];
+    message.flags = CAN_MSG_FLAG_EXTD;
+    message.data_length_code = 8;
+    memset(message.data,0,CAN_MAX_DATA_LEN);
+    ////
+    message.identifier='M';
+    message.identifier|=(106<<8);
+    sprintf((char *)message.data,"S%d\n",thermalManager.fan_speed[0]);
+    printf("M106_id:%x,str:%s \n",message.identifier,(char *)message.data );   
+    if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+      // printf("send %s \n",message.data);
+    } else {
+      printf("Failed \n");
+    }
+  }
+
+  ///////////
   if(target_hotend_slave!=thermalManager.temp_hotend[0].target)
   {
     target_hotend_slave=thermalManager.temp_hotend[0].target;
@@ -1337,7 +1357,9 @@ void ESP32_CAN_INIT()
 #if HAS_SERVOS   
   servo_init();  
 #endif  
+#if CAN_MASTER_ESP32
   init_data_sync_can();
+#endif
 }
 
 void setup() {
@@ -1849,22 +1871,11 @@ void setup() {
 
   marlin_state = MF_RUNNING;
 
- 
-     
-   ESP32_CAN_INIT();  
-  SETUP_LOG("setup() completed.");
-
+#if CAN_MASTER_ESP32      
+  ESP32_CAN_INIT();  
+#endif
   
-message.identifier = 0xAAAA;
-message.flags = CAN_MSG_FLAG_EXTD;
-message.data_length_code = 4;
-
-
-if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
-      printf("Message queued for transmission\n");
-  } else {
-      printf("Failed to queue message for transmission\n");
-  }
+  SETUP_LOG("setup() completed.");
    
 }
 
