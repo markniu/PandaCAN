@@ -374,6 +374,7 @@ void  Send_Can_command(void)
   memset(message.data,0,CAN_MAX_DATA_LEN);
   memset(cmd_str,0,sizeof(cmd_str));
   
+  //printf("%s\n", parser.command_ptr);
   // G1 X1000.22 Y23323.323 Z324.33 E32.21 F1233 => ID:aXY+Data:1000.22+23323.323;ID:bEF+Data:32.21+1233
   //if(e_c=parser.seenval('E')&&(parser.command_letter=='G'))
   if((parser.codenum==0||parser.codenum==1)&&(parser.command_letter=='G'))
