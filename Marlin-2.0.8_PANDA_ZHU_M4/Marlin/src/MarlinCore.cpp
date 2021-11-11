@@ -1312,6 +1312,32 @@ void init_data_sync_can(void)
     printf("Failed \n");
   }
   //////////
+  /////////M301 set PID
+  memset(message.data,0,CAN_MAX_DATA_LEN);
+  message.identifier='M';
+  message.identifier|=(301<<8);
+  sprintf((char *)message.data,"P%.3f\n", thermalManager.temp_hotend[0].pid.Kp);
+  printf("M301 P:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+  } else {
+    printf("Failed \n");
+  }
+  memset(message.data,0,CAN_MAX_DATA_LEN);
+  sprintf((char *)message.data,"I%.3f\n", thermalManager.temp_hotend[0].pid.Ki);
+  printf("M301 I:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+  } else {
+    printf("Failed \n");
+  }
+  memset(message.data,0,CAN_MAX_DATA_LEN);
+  sprintf((char *)message.data,"D%.3f\n", thermalManager.temp_hotend[0].pid.Kd);
+  printf("M301 D:%x,str:%s \n",message.identifier,(char *)message.data );   
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+  } else {
+    printf("Failed \n");
+  }
+
+  //////////
 }
 
 void ESP32_CAN_INIT()
