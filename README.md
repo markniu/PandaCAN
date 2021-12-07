@@ -27,7 +27,7 @@ Prints FAN | Cooling prints,12/24V PWM FAN
 Runout | Filament Runout connector
 Heater  |  15Amax (100A mosfet PSMN1R0-30YLC)
 Temperature sensor| thermistors NTC100K (30degree~260degree)
-High temperature sensor |  will support PT100 (max31865) in the other version 
+High temperature sensor |   support PT100 (max31865) 
 
 [Test video](https://hackaday.io/project/181669-reduce-the-wires-from-19-to-4-with-can-bus)
 
