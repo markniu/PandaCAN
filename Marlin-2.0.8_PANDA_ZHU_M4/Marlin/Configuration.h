@@ -38,7 +38,7 @@
 #define CONFIGURATION_H_VERSION 02000801
 
 #define CAN_MASTER_ESP32  1
-
+//#define CAN_ESP32_PT100_MAX31865   // enable this to use PT100 instead of thermistor.
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -353,6 +353,7 @@
     //#define POWER_OFF_DELAY          60 // (s) Delay of poweroff after M81 command. Useful to let fans run for extra time.
   #endif
 #endif
+
 
 //===========================================================================
 //============================= Thermal Settings ============================

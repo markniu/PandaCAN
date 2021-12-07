@@ -1077,6 +1077,7 @@ celsius_t new_temp_target;
   
 #if CAN_MASTER_ESP32
 celsius_t target_hotend_slave;
+int connect_flag=0;
 static void extruder_status_task(void *arg)
 {
     xSemaphoreTake(can_sem, portMAX_DELAY);
@@ -1088,6 +1089,8 @@ static void extruder_status_task(void *arg)
         
         if (can_receive(&rx_msg, pdMS_TO_TICKS(10)) == ESP_OK)
          {
+            if(connect_flag==0)
+              connect_flag=1;
             if(rx_msg.identifier=='M')// read temperature
             {
              // printf("\nt:%.5f,%d,%c\n",*((float *)(rx_msg.data)),*((unsigned short *)(rx_msg.data+4)),(char)rx_msg.data[6]);
@@ -1178,6 +1181,26 @@ void status_sync_can(void)
       printf("Failed \n");
     }
   }
+  ///
+#if ENABLED(CAN_ESP32_PT100_MAX31865)  
+  if(connect_flag==1)
+  {
+    connect_flag=2;
+    message.flags = CAN_MSG_FLAG_EXTD;
+    message.data_length_code = 8;
+    memset(message.data,0,CAN_MAX_DATA_LEN);
+    ////G93 to switch to pt100 sensor
+    message.identifier='G';
+    message.identifier|=(93<<8);
+    sprintf((char *)message.data,"\n");
+    printf("G93_id:%x,str:%s \n",message.identifier,(char *)message.data );   
+    if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+      // printf("send %s \n",message.data);
+    } else {
+      printf("Failed \n");
+    }
+  }
+#endif  
 }
 
 void init_data_sync_can(void)
