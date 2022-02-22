@@ -1,7 +1,7 @@
 # CAN bus extruder board
 PandaCAN is an extruder control board that connect to main board with CAN interface, more resistant to signal noise,reduce a lot of wires for your 3D printer.
 
-![](https://gitee.com/markyue/pandapi_wiki/raw/master/imges/esp/94007.jpg)
+![image](94007.jpg)
 
 ### Why CAN bus?
 CAN(Controller Area Network) is a robust serial communication bus found mostly in automotive and industrial environments.
@@ -11,7 +11,7 @@ CAN(Controller Area Network) is a robust serial communication bus found mostly i
       19 = hotend cooling Fan: 2 + model cooling Fan: 2 + heater: 2 + temperature sensor: 2 + BLtouch: 5 + Extruder motor: 4+Runout sensor:2
 
 3. High data rate 1Mbps.
-![](https://gitee.com/markyue/pandapi_wiki/raw/master/imges/esp/23564.jpg)
+![iamges](23564.jpg)
 
 
 Items | Specifications  
