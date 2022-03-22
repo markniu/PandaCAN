@@ -17,7 +17,7 @@ CAN(Controller Area Network) is a robust serial communication bus found mostly i
 Items | Specifications  
 --- | --- 
 MCU| ESP32
-Support Main board| There are only two printer main boards [PandaZHU and PandaM4](https://github.com/markniu/PandaZHU) support this PandaCAN extruder board now.
+Support Main board| There are main boards [ESP32 based PandaZHU and PandaM4](https://github.com/markniu/PandaZHU) , [STM32 based PandaPi standalone](https://www.pandapi3d.com/product-page/pandapi-2-8) support this PandaCAN extruder board now.
 CAN Transceiver|SN65HVD230
 Motor Driver|TMC2209
 Bed leveling    | 	  BLtouch/ support wild range voltage 5V~36V of inductive sensor NPN.
