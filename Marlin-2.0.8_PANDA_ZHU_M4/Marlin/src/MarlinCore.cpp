@@ -1061,6 +1061,7 @@ inline void tmc_standby_setup() {
  *  - Open Touch Screen Calibration screen, if not calibrated
  *  - Set Marlin to RUNNING State
  */
+#if CAN_MASTER_ESP32
 #include "driver/gpio.h"
 #include "driver/can.h"
 
@@ -1075,7 +1076,7 @@ static SemaphoreHandle_t can_sem;
 celsius_t new_temp_target;
 #define RX_TASK_PRIO     9
   
-#if CAN_MASTER_ESP32
+
 celsius_t target_hotend_slave;
 int connect_flag=0;
 static void extruder_status_task(void *arg)
@@ -1117,7 +1118,7 @@ static void extruder_status_task(void *arg)
 }
 
 
-#endif
+
 
 void status_sync_can(void)
 {
@@ -1410,6 +1411,9 @@ void ESP32_CAN_INIT()
   init_data_sync_can();
 #endif
 }
+
+#endif
+
 
 void setup() {
   #ifdef BOARD_PREINIT
