@@ -3395,8 +3395,10 @@ void Temperature::isr() {
 #if HAS_TEMP_SENSOR
 
   #include "../gcode/gcode.h"
+#if CAN_MASTER_ESP32
 #include "driver/gpio.h"
 #include "driver/can.h"
+#endif
   /**
    * Print a single heater state in the form:
    *        Bed: " B:nnn.nn /nnn.nn"

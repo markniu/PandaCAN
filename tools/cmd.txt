@@ -1,0 +1,11 @@
+bootloader_dio_40m.bin  0x1000
+boot_app0.bin     0xe000
+partitions.bin   0x8000
+firmware.bin  0x10000
+
+
+SPI speed:40MHZ
+SPI mode:DIO
+
+where is the bootloader_dio_40m.bin?
+https://www.pandapi3d.com/post/install-cnc-3d-printer-firmware-at-the-same-time
