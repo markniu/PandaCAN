@@ -374,7 +374,6 @@ void  Send_Can_command(void)
   memset(message.data,0,CAN_MAX_DATA_LEN);
   memset(cmd_str,0,sizeof(cmd_str));
   
-  //printf("%s\n", parser.command_ptr);
   // G1 X1000.22 Y23323.323 Z324.33 E32.21 F1233 => ID:aXY+Data:1000.22+23323.323;ID:bEF+Data:32.21+1233
   //if(e_c=parser.seenval('E')&&(parser.command_letter=='G'))
   if((parser.codenum==0||parser.codenum==1)&&(parser.command_letter=='G'))
@@ -538,6 +537,7 @@ void  Send_Can_command(void)
 /**
  * Process the parsed command and dispatch it to its handler
  */
+extern int USE_MAX31865;
 void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
   KEEPALIVE_STATE(IN_HANDLER);
 #if CAN_MASTER_ESP32  
@@ -693,7 +693,9 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       case 91: set_relative_mode(true);  break;                   // G91: Relative Mode
 
       case 92: G92(); break;                                      // G92: Set current axis position(s)
-
+      case 93:
+             USE_MAX31865=1;
+      break;  
       #if ENABLED(CALIBRATION_GCODE)
         case 425: G425(); break;                                  // G425: Perform calibration with calibration cube
       #endif
@@ -832,8 +834,10 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #endif
 
       #if HAS_HEATED_BED
+#if CAN_MASTER_ESP32
         case 140: M140(); break;                                  // M140: Set bed temperature
         case 190: M190(); break;                                  // M190: Wait for bed temperature to reach target
+ #endif   
       #endif
 
       #if HAS_HEATED_CHAMBER
@@ -1308,9 +1312,9 @@ void GcodeSuite::process_parsed_command(const bool no_ok/*=false*/) {
       #endif
       parser.unknown_command_warning();
   }
-
+#if CAN_SLAVE_ESP32
   if (!no_ok) queue.ok_to_send();
-
+#endif
   SERIAL_OUT(msgDone); // Call the msgDone serial hook to signal command processing done
 }
 

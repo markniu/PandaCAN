@@ -1061,7 +1061,6 @@ inline void tmc_standby_setup() {
  *  - Open Touch Screen Calibration screen, if not calibrated
  *  - Set Marlin to RUNNING State
  */
-#if CAN_MASTER_ESP32
 #include "driver/gpio.h"
 #include "driver/can.h"
 
@@ -1076,9 +1075,8 @@ static SemaphoreHandle_t can_sem;
 celsius_t new_temp_target;
 #define RX_TASK_PRIO     9
   
-
+#if CAN_MASTER_ESP32
 celsius_t target_hotend_slave;
-int connect_flag=0;
 static void extruder_status_task(void *arg)
 {
     xSemaphoreTake(can_sem, portMAX_DELAY);
@@ -1090,8 +1088,6 @@ static void extruder_status_task(void *arg)
         
         if (can_receive(&rx_msg, pdMS_TO_TICKS(10)) == ESP_OK)
          {
-            if(connect_flag==0)
-              connect_flag=1;
             if(rx_msg.identifier=='M')// read temperature
             {
              // printf("\nt:%.5f,%d,%c\n",*((float *)(rx_msg.data)),*((unsigned short *)(rx_msg.data+4)),(char)rx_msg.data[6]);
@@ -1116,13 +1112,9 @@ static void extruder_status_task(void *arg)
     xSemaphoreGive(can_sem);
     vTaskDelete(NULL);
 }
-
-
-
-
 void status_sync_can(void)
 {
-  static int16_t old_feedper=feedrate_percentage,old_fan_speed[FAN_COUNT];
+  static int16_t old_feedper=feedrate_percentage;
   can_message_t message;
   if(feedrate_percentage!=old_feedper)
   {   
@@ -1143,28 +1135,8 @@ void status_sync_can(void)
       printf("Failed \n");
     }
   }
-  /////current_position.e
 
   ///////
-  if(thermalManager.fan_speed[0]!=old_fan_speed[0])
-  {
-    old_fan_speed[0]=thermalManager.fan_speed[0];
-    message.flags = CAN_MSG_FLAG_EXTD;
-    message.data_length_code = 8;
-    memset(message.data,0,CAN_MAX_DATA_LEN);
-    ////
-    message.identifier='M';
-    message.identifier|=(106<<8);
-    sprintf((char *)message.data,"S%d\n",thermalManager.fan_speed[0]);
-    printf("M106_id:%x,str:%s \n",message.identifier,(char *)message.data );   
-    if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
-      // printf("send %s \n",message.data);
-    } else {
-      printf("Failed \n");
-    }
-  }
-
-  ///////////
   if(target_hotend_slave!=thermalManager.temp_hotend[0].target)
   {
     target_hotend_slave=thermalManager.temp_hotend[0].target;
@@ -1182,26 +1154,6 @@ void status_sync_can(void)
       printf("Failed \n");
     }
   }
-  ///
-#if ENABLED(CAN_ESP32_PT100_MAX31865)  
-  if(connect_flag==1)
-  {
-    connect_flag=2;
-    message.flags = CAN_MSG_FLAG_EXTD;
-    message.data_length_code = 8;
-    memset(message.data,0,CAN_MAX_DATA_LEN);
-    ////G93 to switch to pt100 sensor
-    message.identifier='G';
-    message.identifier|=(93<<8);
-    sprintf((char *)message.data,"\n");
-    printf("G93_id:%x,str:%s \n",message.identifier,(char *)message.data );   
-    if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
-      // printf("send %s \n",message.data);
-    } else {
-      printf("Failed \n");
-    }
-  }
-#endif  
 }
 
 void init_data_sync_can(void)
@@ -1336,33 +1288,178 @@ void init_data_sync_can(void)
     printf("Failed \n");
   }
   //////////
-  /////////M301 set PID
-  memset(message.data,0,CAN_MAX_DATA_LEN);
-  message.identifier='M';
-  message.identifier|=(301<<8);
-  sprintf((char *)message.data,"P%.3f\n", thermalManager.temp_hotend[0].pid.Kp);
-  printf("M301 P:%x,str:%s \n",message.identifier,(char *)message.data );   
-  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
-  } else {
-    printf("Failed \n");
-  }
-  memset(message.data,0,CAN_MAX_DATA_LEN);
-  sprintf((char *)message.data,"I%.3f\n", thermalManager.temp_hotend[0].pid.Ki);
-  printf("M301 I:%x,str:%s \n",message.identifier,(char *)message.data );   
-  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
-  } else {
-    printf("Failed \n");
-  }
-  memset(message.data,0,CAN_MAX_DATA_LEN);
-  sprintf((char *)message.data,"D%.3f\n", thermalManager.temp_hotend[0].pid.Kd);
-  printf("M301 D:%x,str:%s \n",message.identifier,(char *)message.data );   
-  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
-  } else {
-    printf("Failed \n");
-  }
-
-  //////////
 }
+
+#else if CAN_SLAVE_ESP32
+#define Z_INT_PIN 2
+#define RUNOUT_PIN  22
+int USE_MAX31865=0;
+can_message_t rx_msg;
+void temper_rout_report(void)
+{
+  rx_msg.identifier='M';
+  rx_msg.flags = CAN_MSG_FLAG_EXTD;
+  rx_msg.data_length_code = 8;
+  *((float *)(rx_msg.data))=thermalManager.degHotend(0);
+  *((unsigned short *)(rx_msg.data+4))=thermalManager.degTargetHotend(0);
+  if(READ(RUNOUT_PIN))
+    rx_msg.data[6]='H';
+  else
+    rx_msg.data[6]='L';
+
+  if (can_transmit(&rx_msg, pdMS_TO_TICKS(100)) == ESP_OK) {
+    //printf("send ok Tdata:%.5f,%d,%c \n",*(float *)rx_msg.data,*(unsigned short *)(rx_msg.data+4),*(char *)(rx_msg.data+6));
+  } else {
+    printf("Failed R:%c \n",rx_msg.data[6]);
+  }
+}
+static void extruder_status_task(void *arg)
+{
+    xSemaphoreTake(can_sem, portMAX_DELAY);
+    
+    char cmd_str[64],finish_rec=0;
+    int z_level,old_z_level,inter_rep=0,r_level,old_r_level;
+    SET_INPUT_PULLUP(RUNOUT_PIN);
+    SET_INPUT_PULLUP(Z_INT_PIN);
+    memset(cmd_str,0,sizeof(cmd_str));
+    while (1) {
+       
+        inter_rep++;
+        if(inter_rep>3000)
+        {
+          temper_rout_report();
+          inter_rep=0;
+        }
+       ////////////////
+        if (can_receive(&rx_msg, pdMS_TO_TICKS(1)) == ESP_OK)
+         {
+            inter_rep+=2;
+             /////////
+            
+            ///parse gcode name and number
+            
+            ////pase special gcode G1 Ex.x Fx
+            if((rx_msg.identifier&0xff)=='a')
+            {
+              memset(cmd_str,0,sizeof(cmd_str));
+              sprintf(cmd_str+strlen(cmd_str),"G1 %c%.5f ",((rx_msg.identifier>>8)&0xff),*(float *)(rx_msg.data));
+              if(((rx_msg.identifier>>16)&0xff))
+                sprintf(cmd_str+strlen(cmd_str)," %c%.5f ",((rx_msg.identifier>>16)&0xff),*(float *)(rx_msg.data+4));
+              finish_rec=1;
+            }
+            else if ((rx_msg.identifier&0xff)=='b')
+            {
+              sprintf(cmd_str+strlen(cmd_str),"  %c%.5f ",((rx_msg.identifier>>8)&0xff),*(float *)(rx_msg.data));
+              if(((rx_msg.identifier>>16)&0xff))
+                sprintf(cmd_str+strlen(cmd_str)," %c%.5f ",((rx_msg.identifier>>16)&0xff),*(float *)(rx_msg.data+4));
+              finish_rec=0;
+            }
+            else if ((rx_msg.identifier&0xff)=='A')
+            {
+              memset(cmd_str,0,sizeof(cmd_str));
+              sprintf(cmd_str+strlen(cmd_str),"G1 %c%.5f ",((rx_msg.identifier>>8)&0xff),*(float *)(rx_msg.data));
+              if(((rx_msg.identifier>>16)&0xff))
+                sprintf(cmd_str+strlen(cmd_str)," %c%.5f ",((rx_msg.identifier>>16)&0xff),*(float *)(rx_msg.data+4));
+              finish_rec=0;
+            }
+            else if((rx_msg.identifier&0xff)=='C')
+            {
+              memcpy(cmd_str+strlen(cmd_str),rx_msg.data,8);
+              finish_rec=1;
+            }
+            else if((rx_msg.identifier&0xff)=='c') // end of long cmd str
+            {
+              memcpy(cmd_str+strlen(cmd_str),rx_msg.data,8);
+              finish_rec=0;
+            }
+            /*
+            if(rx_msg.data[0]=='E')
+            {
+              sprintf(cmd_str+strlen(cmd_str)," E%.5f",*(float *)(rx_msg.data+1));
+              if(rx_msg.data[5]=='F')
+                sprintf(cmd_str+strlen(cmd_str)," F%d",*(unsigned short *)(rx_msg.data+6));
+            }
+            */
+            /// normal gcode
+            else 
+            {
+              memset(cmd_str,0,sizeof(cmd_str));
+              sprintf(cmd_str,"%c%d ", (char)rx_msg.identifier,(int)(rx_msg.identifier>>8)&0xFFFF );
+              memcpy(cmd_str+strlen(cmd_str),rx_msg.data,8);
+              finish_rec=0;
+            }
+            
+
+            if(finish_rec==0)
+            {
+              cmd_str[strlen(cmd_str)]='\n';
+              cmd_str[strlen(cmd_str)+1]='\0';
+             
+           // parser.parse(cmd_str);
+           // gcode.process_parsed_command();
+           
+              if(rx_msg.identifier==0x694d)//M105
+              {
+                temper_rout_report();
+                inter_rep=0;
+                
+              }
+              else if(rx_msg.identifier==0x1c47) //== G28
+              {
+                
+                //sprintf(cmd_str,"G92 X0 Y0 Z0\n" );
+              //  queue.enqueue_now_P(cmd_str);
+				       // parser.parse(cmd_str);
+               // gcode.process_parsed_command();    
+              }
+              else if(rx_msg.identifier!=0x1d47  //   && !=G29
+                  &&rx_msg.identifier!=0xbe4d&&rx_msg.identifier!=0x8c4d) //!= M190 && !=M140
+              {
+               // queue.enqueue_now_P(cmd_str);       
+                parser.parse(cmd_str);
+                gcode.process_parsed_command();       
+              }
+             // printf( "Rx:%s\n",cmd_str);
+              memset(cmd_str,0,sizeof(cmd_str));
+            }
+
+        }
+        ////////////////read if z min triggered.
+        z_level = digitalRead(Z_INT_PIN); 
+        if(z_level!=old_z_level)
+        {
+          old_z_level=z_level; 
+          message.identifier='Z';
+          if(z_level)
+            message.identifier|=('H'<<8);
+          else
+            message.identifier|=('L'<<8);
+          message.flags = CAN_MSG_FLAG_EXTD;
+          message.data_length_code = 0;
+
+          if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+            printf("Send OK L:%d \n",z_level);
+          } else {
+            printf("Failed L:%d \n",z_level);
+          } 
+        }
+        ///////////////////
+        ////////////////read if run out triggered.
+        r_level = digitalRead(RUNOUT_PIN); 
+        if(r_level!=old_r_level)
+        {
+          old_r_level=r_level;
+          temper_rout_report();
+          inter_rep=0;
+        }
+        ///////////////////
+    }
+    xSemaphoreGive(can_sem);
+    vTaskDelete(NULL);
+}
+
+#endif
+
 
 void ESP32_CAN_INIT()
 {
@@ -1370,11 +1467,17 @@ void ESP32_CAN_INIT()
 
 
   g_config.mode=CAN_MODE_NORMAL;
+#if CAN_MASTER_ESP32
   g_config.tx_io=GPIO_NUM_15;
   g_config.rx_io=GPIO_NUM_13;
   g_config.tx_queue_len=50;
   g_config.rx_queue_len=5;
-
+#else
+  g_config.tx_io=GPIO_NUM_5;
+  g_config.rx_io=GPIO_NUM_4;
+  g_config.tx_queue_len=5;
+  g_config.rx_queue_len=50;
+#endif
 
 
   //g_config.clkout_io=CAN_IO_UNUSED;
@@ -1411,9 +1514,6 @@ void ESP32_CAN_INIT()
   init_data_sync_can();
 #endif
 }
-
-#endif
-
 
 void setup() {
   #ifdef BOARD_PREINIT
@@ -1924,11 +2024,22 @@ void setup() {
 
   marlin_state = MF_RUNNING;
 
-#if CAN_MASTER_ESP32      
-  ESP32_CAN_INIT();  
-#endif
-  
+ 
+     
+   ESP32_CAN_INIT();  
   SETUP_LOG("setup() completed.");
+
+  
+message.identifier = 0xAAAA;
+message.flags = CAN_MSG_FLAG_EXTD;
+message.data_length_code = 4;
+
+
+if (can_transmit(&message, pdMS_TO_TICKS(10)) == ESP_OK) {
+      printf("Message queued for transmission\n");
+  } else {
+      printf("Failed to queue message for transmission\n");
+  }
    
 }
 

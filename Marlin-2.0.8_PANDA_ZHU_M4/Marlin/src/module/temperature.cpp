@@ -87,7 +87,10 @@
     );
   #endif
 #endif
-
+#define MAX31865_MISO_PIN 23 
+#define MAX31865_SCK_PIN 27
+#define MAX31865_MOSI_PIN  14
+#define MAX31865_CS_PIN 26
 // LIB_MAX31865 can be added to the build_flags in platformio.ini to use a user-defined library.
 // If LIB_MAX31865 is not on the build_flags then the Adafruit MAX31865 V1.1.0 library is used.
 #if HAS_MAX31865
@@ -900,7 +903,7 @@ inline void loud_kill(PGM_P const lcd_msg, const heater_id_t heater_id) {
 void Temperature::_temp_error(const heater_id_t heater_id, PGM_P const serial_msg, PGM_P const lcd_msg) {
 
   static uint8_t killed = 0;
-
+return;
   if (IsRunning() && TERN1(BOGUS_TEMPERATURE_GRACE_PERIOD, killed == 2)) {
     SERIAL_ERROR_START();
     SERIAL_ECHOPGM_P(serial_msg);
@@ -1951,6 +1954,7 @@ void Temperature::manage_heater() {
  * being set by the interrupt so that this method is not called for over
  * 4 seconds then something has gone afoul and the machine will be reset.
  */
+extern int USE_MAX31865;
 void Temperature::updateTemperaturesFromRawValues() {
 
   watchdog_refresh(); // Reset because raw_temps_ready was set by the interrupt
@@ -1959,7 +1963,10 @@ void Temperature::updateTemperaturesFromRawValues() {
   TERN_(TEMP_SENSOR_1_IS_MAX_TC, TERN(TEMP_SENSOR_1_AS_REDUNDANT, temp_redundant, temp_hotend[1]).raw = READ_MAX_TC(1));
   #if HAS_HOTEND
   #if !CAN_MASTER_ESP32
-    HOTEND_LOOP() temp_hotend[e].celsius = analog_to_celsius_hotend(temp_hotend[e].raw, e);
+    if(USE_MAX31865==1)
+      HOTEND_LOOP() temp_hotend[e].celsius = analog_to_celsius_hotend(temp_hotend[e].raw, e);
+    else
+      HOTEND_LOOP() temp_hotend[e].celsius = analog_to_celsius_bed(temp_bed.raw);
   #endif 
   #endif
   TERN_(TEMP_SENSOR_1_AS_REDUNDANT, temp_redundant.celsius = analog_to_celsius_hotend(temp_redundant.raw, 1));
@@ -3395,10 +3402,8 @@ void Temperature::isr() {
 #if HAS_TEMP_SENSOR
 
   #include "../gcode/gcode.h"
-#if CAN_MASTER_ESP32
 #include "driver/gpio.h"
 #include "driver/can.h"
-#endif
   /**
    * Print a single heater state in the form:
    *        Bed: " B:nnn.nn /nnn.nn"
@@ -3473,6 +3478,25 @@ void Temperature::isr() {
       printf("Failed \n");
     }
      
+  #else if CAN_SLAVE_ESP32 
+ /* char cmd_str[32];
+  can_message_t message;
+  message.identifier='M';
+  message.flags = CAN_MSG_FLAG_EXTD;
+  message.data_length_code = 8;
+  *((float *)(message.data))=degHotend(target_extruder);
+  *((unsigned short *)(message.data+4))=degTargetHotend(target_extruder);
+  if(READ(RUNOUT_PIN))
+    message.data[6]='H';
+  else
+    message.data[6]='L';
+ 
+  if (can_transmit(&message, pdMS_TO_TICKS(100)) == ESP_OK) {
+    printf("send ok Tdata:%.5f,%d,%c \n",*(float *)message.data,*(unsigned short *)(message.data+4),*(char *)(message.data+6));
+  } else {
+    printf("Failed \n");
+  }
+*/
   #endif   
       print_heater_state(H_NONE, degHotend(target_extruder), degTargetHotend(target_extruder) OPTARG(SHOW_TEMP_ADC_VALUES, rawHotendTemp(target_extruder)));
       #if ENABLED(TEMP_SENSOR_1_AS_REDUNDANT)

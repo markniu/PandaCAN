@@ -32,6 +32,7 @@
 
 #define SERVO0_PIN                       0
 
+#if !CAN_SLAVE_ESP32
 
 //
 // Limit Switches
@@ -120,4 +121,34 @@
 #define LCD_PINS_D4                    14
     
 
- 
+ #else
+
+#define Y_MIN_PIN                            12
+#define Z_MIN_PIN                            14
+#define X_MIN_PIN                            27
+
+#define X_STEP_PIN                          100+1 
+#define X_DIR_PIN                           100
+#define X_ENABLE_PIN                        100+24+4
+
+
+#define Y_STEP_PIN                          100+3   
+#define Y_DIR_PIN                           100+2 
+#define Y_ENABLE_PIN                        100+24+4
+//#define Y_CS_PIN                            13
+
+#define Z_STEP_PIN                           100+5
+#define Z_DIR_PIN                            100+4
+#define Z_ENABLE_PIN                         100+24+4
+//#define Z_CS_PIN                             5  // SS_PIN
+
+#define E0_STEP_PIN                         19
+#define E0_DIR_PIN                          18
+#define E0_ENABLE_PIN                       21
+
+#define TEMP_0_PIN                            39  // Analog Input
+#define HEATER_0_PIN                          32
+#define FAN_PIN                               33  
+#define E0_AUTO_FAN_PIN_ESP                   25 
+
+ #endif   

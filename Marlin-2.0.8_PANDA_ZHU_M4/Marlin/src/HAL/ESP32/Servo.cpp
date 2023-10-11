@@ -24,10 +24,8 @@
 #include "../../inc/MarlinConfig.h"
 
 #if HAS_SERVOS
-#if CAN_MASTER_ESP32
 #include "driver/gpio.h"
 #include "driver/can.h"
-#endif
 #include "Servo.h"
 
 // Adjacent channels (0/1, 2/3 etc.) share the same timer and therefore the same frequency and resolution settings on ESP32,
@@ -60,11 +58,10 @@ void Servo::write(int inDegrees) {
 
 void Servo::move(const int value) {
   constexpr uint16_t servo_delay[] = SERVO_DELAY;
-  
+  printf("Servo:%d\n",value); 
   //M280 Px S
 #if CAN_MASTER_ESP32
    can_message_t message;
-   printf("Servo:%d\n",value); 
     //send M105
     message.identifier='M';
     message.identifier|=(280<<8);

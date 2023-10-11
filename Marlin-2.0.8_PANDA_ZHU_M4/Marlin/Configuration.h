@@ -37,8 +37,8 @@
  */
 #define CONFIGURATION_H_VERSION 02000801
 
-#define CAN_MASTER_ESP32  1
-//#define CAN_ESP32_PT100_MAX31865   // enable this to use PT100 instead of thermistor.
+#define CAN_MASTER_ESP32  0
+#define CAN_SLAVE_ESP32  !CAN_MASTER_ESP32
 
 //===========================================================================
 //============================= Getting Started =============================
@@ -87,9 +87,9 @@
  */
 
 // Show the Marlin bootscreen on startup. ** ENABLE FOR PRODUCTION **
-
+#if !CAN_SLAVE_ESP32
 #define SHOW_BOOTSCREEN
-
+#endif
 // Show the bitmap in Marlin/_Bootscreen.h on startup.
 //#define SHOW_CUSTOM_BOOTSCREEN
 
@@ -354,7 +354,6 @@
   #endif
 #endif
 
-
 //===========================================================================
 //============================= Thermal Settings ============================
 //===========================================================================
@@ -426,7 +425,7 @@
  *   998 : Dummy Table that ALWAYS reads 25°C or the temperature defined below.
  *   999 : Dummy Table that ALWAYS reads 100°C or the temperature defined below.
  */
-#define TEMP_SENSOR_0 1
+#define TEMP_SENSOR_0 -5
 #define TEMP_SENSOR_1 0
 #define TEMP_SENSOR_2 0
 #define TEMP_SENSOR_3 0
@@ -434,7 +433,11 @@
 #define TEMP_SENSOR_5 0
 #define TEMP_SENSOR_6 0
 #define TEMP_SENSOR_7 0
+#if !CAN_SLAVE_ESP32
 #define TEMP_SENSOR_BED 1
+#else
+#define TEMP_SENSOR_BED 1
+#endif
 #define TEMP_SENSOR_PROBE 0
 #define TEMP_SENSOR_CHAMBER 0
 #define TEMP_SENSOR_COOLER 0
@@ -444,8 +447,8 @@
 #define DUMMY_THERMISTOR_999_VALUE 100
 
 // Resistor values when using MAX31865 sensors (-5) on TEMP_SENSOR_0 / 1
-//#define MAX31865_SENSOR_OHMS_0      100   // (Ω) Typically 100 or 1000 (PT100 or PT1000)
-//#define MAX31865_CALIBRATION_OHMS_0 430   // (Ω) Typically 430 for AdaFruit PT100; 4300 for AdaFruit PT1000
+#define MAX31865_SENSOR_OHMS_0      100   // (Ω) Typically 100 or 1000 (PT100 or PT1000)
+#define MAX31865_CALIBRATION_OHMS_0 430   // (Ω) Typically 430 for AdaFruit PT100; 4300 for AdaFruit PT1000
 //#define MAX31865_SENSOR_OHMS_1      100
 //#define MAX31865_CALIBRATION_OHMS_1 430
 
@@ -664,7 +667,7 @@
  */
 
 //#define THERMAL_PROTECTION_HOTENDS // Enable thermal protection for all extruders
-#define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
+//#define THERMAL_PROTECTION_BED     // Enable thermal protection for the heated bed
 #define THERMAL_PROTECTION_CHAMBER // Enable thermal protection for the heated chamber
 #define THERMAL_PROTECTION_COOLER  // Enable thermal protection for the laser cooling
 
@@ -1297,9 +1300,9 @@
  * RAMPS-based boards use SERVO3_PIN for the first runout sensor.
  * For other boards you may need to define FIL_RUNOUT_PIN, FIL_RUNOUT2_PIN, etc.
  */
-
+#if !CAN_SLAVE_ESP32
 #define FILAMENT_RUNOUT_SENSOR
-
+#endif
 
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #define FIL_RUNOUT_ENABLED_DEFAULT true // Enable the sensor on startup. Override with M412 followed by M500.
@@ -1951,9 +1954,9 @@
  * SD Card support is disabled by default. If your controller has an SD slot,
  * you must uncomment the following option or it won't work.
  */
-
+#if !CAN_SLAVE_ESP32
 #define SDSUPPORT
-
+#endif
 /**
  * SD CARD: ENABLE CRC
  *
@@ -2400,7 +2403,7 @@
 // ORIGIN : https://www.aliexpress.com/item/32993409517.html
 // FYSETC : https://www.aliexpress.com/item/32961471929.html
 //
-
+#if !CAN_SLAVE_ESP32
 //#define DGUS_LCD_UI_ORIGIN
 //#define DGUS_LCD_UI_HIPRECY
 //#define DGUS_LCD_UI_FYSETC
@@ -2411,7 +2414,7 @@
   #define USE_MKS_GREEN_UI
 #endif
 
-
+#endif
 
 //
 // Touch-screen LCD for Malyan M200/M300 printers
