@@ -45,7 +45,8 @@ Firmware for PandCAN:
 #define CAN_MASTER_ESP32  0
 ```
 
-
+### Download firmware
+https://github.com/markniu/PandaZHU/wiki/Compile&Flash-firmware
 
 [Where to buy](https://www.pandapi3d.com/product-page/pandacan-extruder)
 
