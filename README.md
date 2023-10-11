@@ -31,7 +31,21 @@ High temperature sensor |   support PT100 (max31865)
 
 [Test video](https://hackaday.io/project/181669-reduce-the-wires-from-19-to-4-with-can-bus)
 
-[Tutorial wiki](https://github.com/markniu/PandaCAN/wiki)
+### How to compile:  
+there are 2 firmware, one for the mainboard PandaZHU or PandaM4 and the other is for the PandCAN,
+just edit the configuration.h
+
+Firmware for mainboard:
+```
+#define CAN_MASTER_ESP32  1
+```
+
+Firmware for PandCAN:
+```
+#define CAN_MASTER_ESP32  0
+```
+
+
 
 [Where to buy](https://www.pandapi3d.com/product-page/pandacan-extruder)
 
